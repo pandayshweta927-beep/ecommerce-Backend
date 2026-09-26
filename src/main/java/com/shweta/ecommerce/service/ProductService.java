@@ -5,19 +5,28 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.shweta.ecommerce.dto.ProductDTO;
 import com.shweta.ecommerce.entity.Product;
+import com.shweta.ecommerce.exception.ProductNotFoundException;
 import com.shweta.ecommerce.repository.ProductRepository;
-
+import com.shweta.ecommerce.exception.ProductNotFoundException;
+import org.modelmapper.ModelMapper;
 @Service
 public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+     private ModelMapper modelMapper;
+    // Add Product
 
-    // Save Product
-    public Product saveProduct(Product product) {
-        return productRepository.save(product);
-    }
+public Product saveProduct(ProductDTO productDTO) {
+
+    Product product = modelMapper.map(productDTO, Product.class);
+
+    return productRepository.save(product);
+}
 
     // Get All Products
     public List<Product> getAllProducts() {
@@ -26,23 +35,38 @@ public class ProductService {
 
     // Get Product By ID
     public Product getProductById(Long id) {
-        return productRepository.findById(id).orElse(null);
+
+    return productRepository.findById(id)
+            .orElseThrow(() ->
+                    new ProductNotFoundException(
+                            "Product with ID " + id + " not found"
+                    )
+            );
+}
+
+   // Update Product
+public Product updateProduct(Long id, ProductDTO productDTO) {
+
+    Product existingProduct = productRepository.findById(id)
+            .orElseThrow(() ->
+                    new ProductNotFoundException(
+                            "Product with ID " + id + " not found"
+                    )
+            );
+
+    modelMapper.map(productDTO, existingProduct);
+
+    return productRepository.save(existingProduct);
+}
+    // Delete Product
+    public String deleteProduct(Long id) {
+
+        if (productRepository.existsById(id)) {
+
+            productRepository.deleteById(id);
+            return "Product Deleted Successfully";
+        }
+
+        return "Product Not Found";
     }
-public Product updateProduct(Long id, Product product) {
-    Product existingProduct = productRepository.findById(id).orElse(null);
-    if (existingProduct != null) {
-        existingProduct.setName(product.getName());
-        existingProduct.setPrice(product.getPrice());
-        existingProduct.setQuantity(product.getQuantity());
-        return productRepository.save(existingProduct);
-
-}
- return null;
-}
-// Delete Product
-public void deleteProduct(Long id) {
-    productRepository.deleteById(id);
-
-}
-
 }
