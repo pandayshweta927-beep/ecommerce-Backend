@@ -6,27 +6,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.shweta.ecommerce.dto.ProductDTO;
+import com.shweta.ecommerce.entity.Category;
 import com.shweta.ecommerce.entity.Product;
 import com.shweta.ecommerce.exception.ProductNotFoundException;
+import com.shweta.ecommerce.repository.CategoryRepository;
 import com.shweta.ecommerce.repository.ProductRepository;
-import com.shweta.ecommerce.exception.ProductNotFoundException;
-import org.modelmapper.ModelMapper;
+
 @Service
 public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
-    
+
     @Autowired
-     private ModelMapper modelMapper;
+    private CategoryRepository categoryRepository;
+
     // Add Product
+    public Product saveProduct(ProductDTO productDTO) {
 
-public Product saveProduct(ProductDTO productDTO) {
+        Category category = categoryRepository.findById(productDTO.getCategoryId())
+                .orElseThrow(() ->
+                        new RuntimeException("Category not found"));
 
-    Product product = modelMapper.map(productDTO, Product.class);
+        Product product = new Product();
 
-    return productRepository.save(product);
-}
+        product.setName(productDTO.getName());
+        product.setPrice(productDTO.getPrice());
+        product.setQuantity(productDTO.getQuantity());
+        product.setCategory(category);
+
+        return productRepository.save(product);
+    }
 
     // Get All Products
     public List<Product> getAllProducts() {
@@ -36,28 +46,36 @@ public Product saveProduct(ProductDTO productDTO) {
     // Get Product By ID
     public Product getProductById(Long id) {
 
-    return productRepository.findById(id)
-            .orElseThrow(() ->
-                    new ProductNotFoundException(
-                            "Product with ID " + id + " not found"
-                    )
-            );
-}
+        return productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ProductNotFoundException(
+                                "Product with ID " + id + " not found"
+                        )
+                );
+    }
 
-   // Update Product
-public Product updateProduct(Long id, ProductDTO productDTO) {
+    // Update Product
+    public Product updateProduct(Long id, ProductDTO productDTO) {
 
-    Product existingProduct = productRepository.findById(id)
-            .orElseThrow(() ->
-                    new ProductNotFoundException(
-                            "Product with ID " + id + " not found"
-                    )
-            );
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ProductNotFoundException(
+                                "Product with ID " + id + " not found"
+                        )
+                );
 
-    modelMapper.map(productDTO, existingProduct);
+        Category category = categoryRepository.findById(productDTO.getCategoryId())
+                .orElseThrow(() ->
+                        new RuntimeException("Category not found"));
 
-    return productRepository.save(existingProduct);
-}
+        existingProduct.setName(productDTO.getName());
+        existingProduct.setPrice(productDTO.getPrice());
+        existingProduct.setQuantity(productDTO.getQuantity());
+        existingProduct.setCategory(category);
+
+        return productRepository.save(existingProduct);
+    }
+
     // Delete Product
     public String deleteProduct(Long id) {
 

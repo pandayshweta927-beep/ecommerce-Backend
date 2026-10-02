@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Product {
@@ -17,6 +19,10 @@ public class Product {
     private Double price;
 
     private Integer quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     // Default Constructor
     public Product() {
@@ -39,6 +45,10 @@ public class Product {
         return quantity;
     }
 
+    public Category getCategory() {
+        return category;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -54,5 +64,9 @@ public class Product {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }
